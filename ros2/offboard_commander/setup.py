@@ -16,7 +16,7 @@ setup(
     maintainer='sunsakis',
     maintainer_email='sunsakis@pm.me',
     description='Anchor-frame visual positioning + flow-based hover test for PX4 SITL.',
-    license='MIT',
+    license='Apache-2.0',
     extras_require={
         'test': [
             'pytest',

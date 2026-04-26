@@ -5,7 +5,7 @@
   <version>0.0.0</version>
   <description>Anchor-frame visual positioning + flow-based hover test for PX4 SITL.</description>
   <maintainer email="sunsakis@pm.me">sunsakis</maintainer>
-  <license>MIT</license>
+  <license>Apache-2.0</license>
 
   <depend>rclpy</depend>
   <depend>px4_msgs</depend>

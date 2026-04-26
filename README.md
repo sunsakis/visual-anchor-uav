@@ -217,4 +217,4 @@ The Gazebo-based sweeps (`sim_texture_probe.py`, `anchor_hover_bench.py`) requir
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+Apache License 2.0 — see [`LICENSE`](LICENSE).
