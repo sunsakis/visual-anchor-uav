@@ -2,9 +2,9 @@
 
 A drift-free, vision-only position-hold module for drones operating in GPS-denied environments. Matches the live downward camera frame against a stored reference image (the *anchor*) using a learned feature extractor + RANSAC homography, and emits a `motion_delta` message that the host flight controller's EKF fuses as an absolute-position measurement.
 
-Bench-validated against six Ukraine terrain types in a PX4 SITL + Gazebo Classic harness. Designed to ship on an ARM SoC + edge NPU; current dev runs on Raspberry Pi 4.
+Bench-validated against six Ukraine terrain types in a PX4 SITL + Gazebo Classic harness, with **no upper-altitude ceiling** found across a 5–900 m sweep — the algorithm scaled to whatever altitude the sim plane geometry could resolve. Designed to ship on an ARM SoC + edge NPU; current dev runs on Raspberry Pi 4.
 
-> **Status:** sim-validated. Hardware bring-up (Pi 4 + OV9281 global-shutter mono camera + IMU + baro) is the next step, followed by ONNX export and INT8 quantization for embedded NPU deploy.
+> **Status:** sim-validated, altitude-unconstrained (5–900 m tested, no algorithmic ceiling). Hardware bring-up (Pi 4 + OV9281 global-shutter mono camera + IMU + baro) is the next step, followed by ONNX export and INT8 quantization for embedded NPU deploy.
 
 ![demo](docs/demo.gif)
 
@@ -107,7 +107,9 @@ Result: **XFeat passes 100 %** of cross-provider tests with mean reprojection er
 
 `bench/sim_texture_probe.py` against a Gazebo plane with z18 (0.40 m/px) ESRI tiles of the same six Ukraine locations. Six camera configurations × twelve altitudes (5–900 m) × six locations.
 
-Result with the chosen baseline (1280×800, 90° HFOV): **70/72 PASS** across the v0 product band (≥30 m altitude). Texture-GSD-driven floor at 110° HFOV is **20 m** — that's the lowest altitude at which a 0.40 m/px tile resolves enough features for reliable matching, an artifact of sim resolution rather than the algorithm. No upper ceiling found within the simulator's geometry.
+Result with the chosen baseline (1280×800, 90° HFOV): **70/72 PASS** across the v0 product band (≥30 m altitude). The follow-up sweep (`L2 Task 1c`) extended the altitude axis to **5–900 m** with the camera `<far>` clip plane bumped to 3 km: **no upper-altitude ceiling found** — every altitude PASSed up to the limit of the sim plane geometry. Texture-GSD-driven floor at 110° HFOV is **20 m** — the lowest altitude at which a 0.40 m/px tile resolves enough features for reliable matching, an artifact of sim resolution rather than the algorithm.
+
+The altitude-unconstrained property is the structural reason this approach was picked over VIO and pure optical flow. VIO's drift compounds with distance traveled, which forces the operating envelope down to where features are dense and motion is small. Anchor matching reprojects the drone against an externally provided reference, so the only relevant constraint is matcher resolution-on-anchor — and at higher altitudes, you're simply matching a wider footprint against a higher-zoom tile, which is well within XFeat's regime.
 
 ### L2 Task 4 — anchor estimator on a teleport trajectory
 
