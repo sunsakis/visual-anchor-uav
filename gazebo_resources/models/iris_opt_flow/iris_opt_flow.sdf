@@ -1,0 +1,65 @@
+<sdf version='1.5'>
+  <model name='iris_opt_flow'>
+    <include>
+      <uri>model://iris</uri>
+    </include>
+
+    <!-- px4flow (narrow 14.3° flow camera — drives PX4 EKF2 flow fusion) -->
+    <include>
+      <uri>model://px4flow</uri>
+      <pose>0.05 0 -0.05 0 0 0</pose>
+    </include>
+
+    <joint name="px4flow_joint" type="revolute">
+      <parent>iris::base_link</parent>
+      <child>px4flow::link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <upper>0</upper>
+          <lower>0</lower>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- lidar (range sensor) -->
+    <include>
+      <uri>model://lidar</uri>
+      <pose>0 0 -0.05 0 0 0</pose>
+    </include>
+
+    <joint name="lidar_joint" type="fixed">
+      <parent>iris::base_link</parent>
+      <child>lidar::link</child>
+    </joint>
+
+    <!-- Anchor camera (wide 110° HFOV, 1280x800 mono, Arducam OV9281 specs).
+         Observation-only; feeds anchor_estimator ROS node, does NOT drive
+         PX4's EKF2.  Bench check 2026-04-21: removing this body did not
+         materially improve hover WORLD RMS (still 1.5-1.8 m), so the L3
+         baseline shift is not caused by anchor_cam mass/inertia — it appears
+         to be a world-texture/lighting artifact from the iris_anchor.world
+         rebuild.  Keeping the camera wired so Tasks 3/4 integrate cleanly. -->
+    <include>
+      <uri>model://anchor_cam_iris</uri>
+      <pose>0.0 0.05 -0.05 0 0 0</pose>
+    </include>
+
+    <joint name="anchor_cam_iris_joint" type="fixed">
+      <parent>iris::base_link</parent>
+      <child>anchor_cam_iris::link</child>
+    </joint>
+
+    <!-- Listen-only gust injector (Test 2 wind response).  Idle when no
+         publisher on /iris_opt_flow/gust, so this is baseline-safe. -->
+    <plugin name="gust_force" filename="libgazebo_ros_force.so">
+      <ros>
+        <namespace>/iris_opt_flow</namespace>
+        <remapping>gazebo_ros_force:=gust</remapping>
+      </ros>
+      <link_name>iris::base_link</link_name>
+      <force_frame>world</force_frame>
+    </plugin>
+
+  </model>
+</sdf>

@@ -1,0 +1,36 @@
+# Vendor trees (large external repos pulled in for local SITL dev)
+PX4-Autopilot/
+Micro-XRCE-DDS-Agent/
+
+# Run artifacts
+logs/
+*.log
+*.csv.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Claude / process notes
+.claude/
+CLAUDE.md
+notes.md
+prompt_*.md
+shopping_list.md
+research/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Demo runtime caches (regenerated from sim or offline harness)
+/tmp_demo_cache/
+
+# Large texture intermediates — keep z16 fixtures, fetch z18 via script
+bench/aerial_google/
+bench/aerial/*_z18.jpg

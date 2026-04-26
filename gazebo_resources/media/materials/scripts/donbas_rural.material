@@ -1,0 +1,25 @@
+// Eastern-Ukraine aerial ground texture for anchor-matching bench.
+// Source: ESRI World Imagery zoom-18 tile at (48.45°N, 38.25°E) —
+// rural open steppe + villages, 16x16-tile grid = 4096 px covering
+// ~1622 m x 1622 m (~0.40 m/px native GSD).
+//
+// Applied on a 1600x1600 m plane with scale 1.0 so the tile covers
+// the full plane once at its native GSD.
+material Drone/DonbasRural
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.5 0.5 0.5 1.0
+      diffuse 1.0 1.0 1.0 1.0
+      specular 0.05 0.05 0.05 1.0 2.0
+      texture_unit
+      {
+        texture donbas_rural.jpg
+        filtering trilinear
+        scale 1.0 1.0
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="anchor_bench">
+    <include><uri>model://sun</uri></include>
+
+    <!-- 3200 m x 3200 m plane textured with the donbas_rural ESRI zoom-18 tile
+         (32x32 grid = 8192 px covering ~3245 m at 0.40 m/px native).
+         Covers altitude sweep up to ~800 m AGL with 90° HFOV (patch = 1600 m)
+         plus lateral 50%-overlap teleport with margin. -->
+    <model name="textured_ground">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>3200 3200</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>3200 3200</size></plane></geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/donbas_rural.material</uri>
+              <name>Drone/DonbasRural</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <include><uri>model://anchor_cam</uri></include>
+
+    <!-- Ground-truth / pose-set plugin for 'gz model' teleport and state queries. -->
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros><namespace>/gazebo</namespace></ros>
+      <update_rate>50.0</update_rate>
+    </plugin>
+
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+
+    <gui fullscreen="0">
+      <camera name="user_camera">
+        <pose>0 -8 5 0 0.5 1.5708</pose>
+        <view_controller>orbit</view_controller>
+      </camera>
+    </gui>
+  </world>
+</sdf>

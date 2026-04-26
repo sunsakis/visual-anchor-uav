@@ -1,0 +1,22 @@
+// Material for flow_test.world ground plane.
+// Uses granite.jpg (gazebo-11 stock texture) tiled to give the px4flow camera
+// dense, non-periodic high-frequency features. scale 0.05 0.05 = ~20 tiles per
+// metre across the 50x50 m plane.
+material Drone/RockyTerrain
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.4 0.4 0.4 1.0
+      diffuse 0.9 0.9 0.9 1.0
+      specular 0.05 0.05 0.05 1.0 2.0
+      texture_unit
+      {
+        texture granite.jpg
+        filtering trilinear
+        scale 0.05 0.05
+      }
+    }
+  }
+}
