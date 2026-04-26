@@ -6,6 +6,11 @@ Bench-validated against six Ukraine terrain types in a PX4 SITL + Gazebo Classic
 
 > **Status:** sim-validated, altitude-unconstrained (5–900 m tested, no algorithmic ceiling). Hardware bring-up (Pi 4 + OV9281 global-shutter mono camera + IMU + baro) is the next step, followed by ONNX export and INT8 quantization for embedded NPU deploy.
 
+**Headline numbers** *(sources in [Bench results](#bench-results))*:
+- **100% matcher success** on cross-provider tests across six Ukraine terrain types (XFeat; ORB fails on 3/6 rural cases; SuperPoint+LightGlue passes but is ~25× slower with no inlier benefit).
+- **70/72 PASS** in the altitude × terrain Gazebo sweep at the v0 baseline camera (1280×800, 90° HFOV) — six Ukraine locations × twelve altitudes.
+- **No upper-altitude ceiling** found across a 5–900 m sweep; every altitude PASSed up to the limit of sim plane geometry.
+
 ![demo](docs/demo.gif)
 
 *Offline pipeline demo. Anchor frame (left) is a centre crop of an ESRI z16 aerial tile of Donbas, Ukraine. The live frame (right) drifts around the anchor on a 24-waypoint circle. Each frame: XFeat → mutual-NN matching → RANSAC homography → metres in the world frame. End-to-end error stays under 0.2 m across the trajectory. Reproduce with `python3 demo/demo_offline_aerial.py`.*
