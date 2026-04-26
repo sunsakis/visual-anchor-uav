@@ -2,18 +2,30 @@
 
 A drift-free, vision-only position-hold module for drones operating in GPS-denied environments. Matches the live downward camera frame against a stored reference image (the *anchor*) using a learned feature extractor + RANSAC homography, and emits a `motion_delta` message that the host flight controller's EKF fuses as an absolute-position measurement.
 
-Bench-validated against six Ukraine terrain types in a PX4 SITL + Gazebo Classic harness, with **no upper-altitude ceiling** found across a 5–900 m sweep — the algorithm scaled to whatever altitude the sim plane geometry could resolve. Designed to ship on an ARM SoC + edge NPU; current dev runs on Raspberry Pi 4.
-
-> **Status:** sim-validated, altitude-unconstrained (5–900 m tested, no algorithmic ceiling). Hardware bring-up (Pi 4 + OV9281 global-shutter mono camera + IMU + baro) is the next step, followed by ONNX export and INT8 quantization for embedded NPU deploy.
-
-**Headline numbers** *(sources in [Bench results](#bench-results))*:
-- **100% matcher success** on cross-provider tests across six Ukraine terrain types (XFeat; ORB fails on 3/6 rural cases; SuperPoint+LightGlue passes but is ~25× slower with no inlier benefit).
-- **70/72 PASS** in the altitude × terrain Gazebo sweep at the v0 baseline camera (1280×800, 90° HFOV) — six Ukraine locations × twelve altitudes.
-- **No upper-altitude ceiling** found across a 5–900 m sweep; every altitude PASSed up to the limit of sim plane geometry.
-
 ![demo](docs/demo.gif)
 
 *Offline pipeline demo. Anchor frame (left) is a centre crop of an ESRI z16 aerial tile of Donbas, Ukraine. The live frame (right) drifts around the anchor on a 24-waypoint circle. Each frame: XFeat → mutual-NN matching → RANSAC homography → metres in the world frame. End-to-end error stays under 0.2 m across the trajectory. Reproduce with `python3 demo/demo_offline_aerial.py`.*
+
+### Headline numbers
+
+*Sources in [Bench results](#bench-results).*
+
+- **100% matcher success** on cross-provider tests across six Ukraine terrain types — XFeat beats SuperPoint+LightGlue at ~25× the speed (~115 ms vs ~2900 ms); ORB fails on 3/6 rural cases.
+- **70/72 PASS** in the altitude × terrain Gazebo sweep at the v0 baseline camera (1280×800, 90° HFOV) — six Ukraine locations × twelve altitudes.
+- **No upper-altitude ceiling** found across a 5–900 m sweep; every altitude PASSed up to the limit of sim plane geometry.
+- **<0.2 m end-to-end error** on the offline trajectory demo above; **5 mm scale error** on a 10 m drift-and-return in the SITL teleport bench.
+
+### At a glance
+
+| | |
+|---|---|
+| **Output** | `motion_delta` (ROS2) — `dx, dy, dyaw` in metres + `reference` ∈ `{ANCHOR, PREVIOUS_FRAME}` |
+| **Anchor path** | XFeat + mutual-NN + `cv2.findHomography(RANSAC, 3 px)` → 2–10 Hz, drift-free while LOCKED |
+| **Short-window path** | Pyramidal Lucas–Kanade on Shi–Tomasi corners, gyro pre-rotation, RANSAC median, dense DIS fallback → 100 Hz |
+| **Host integration** | PX4 EKF2 unmodified — `EKF2_EV_CTRL` (anchor) + `EKF2_OF_CTRL` (short-window) paths |
+| **Hardware** | Arducam OV9281 (1280×800, global shutter, 110° HFOV) + Bosch BMI270/BMP388 + Pi 4 (dev) → SoC + edge NPU (ship) |
+| **Stack** | Python + PyTorch (XFeat); OpenCV + ONNX runtime in C++ underneath; native C++ port of the 100 Hz hot path on the roadmap |
+| **Status** | Sim-validated, altitude-unconstrained (5–900 m tested). Hardware bring-up next, then ONNX INT8 deploy |
 
 ---
 
